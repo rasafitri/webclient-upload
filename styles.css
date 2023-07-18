@@ -1,0 +1,126 @@
+:root {
+  --primary-color: #F64C72;
+  --secondary-color: #2F2FA2;
+  --accent-color: #9797D1;
+  --text-color: #2F2FA2;
+  --background-color: #ffffff;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: "National Regular";
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: var(--text-color);
+  font-size: 24px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+#dropArea {
+  max-width: 640px;
+  height: 320px;
+  border: 2px dashed #aaa;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 320px;
+}
+
+.centered-paragraph {
+  text-align: center;
+  font-size: 24pt;
+}
+
+#imgUploadButton,
+#txtUploadButton {
+  background-color: var(--secondary-color);
+  color: var(--background-color);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#imgUploadButton:hover,
+#txtUploadButton:hover {
+  background-color: var(--accent-color);
+}
+
+#imgUploadButton:disabled,
+#txtUploadButton:disabled {
+  cursor: not-allowed;
+  background-color: #aaa;
+}
+
+#textToSend {
+  width: 650px;
+  max-width: 640px;
+  padding: 5px;
+  font-size: 16px;
+  font-weight: 400;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+#imgInput {
+  margin-right: 310px;
+}
+
+#selColor {
+  width: 100px;
+  padding: 5px;
+  margin-bottom: 10px;
+  margin-left: 5px;
+}
+
+#textMode {
+  width: 100px;
+  padding: 5px;
+  margin-right: 5px;
+  margin-left: 22px;
+}
+
+.info-icon {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  color: grey;
+  border: 2px solid grey;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 10px;
+  margin-right: 180px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.info-tooltip {
+  display: none;
+  background-color: #f9f9f9;
+  color: #333;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+}
+
+.info-icon:hover+.info-tooltip {
+  display: block;
+}

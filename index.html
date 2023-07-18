@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Summer School 2023</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body onload="onPageLoad()">
+  <h1>Summer School 2023 - Prototyping für ein gesundes Berlin</h1>
+  <p>Hier können Sie ein Bild hochladen, das auf der HUB75 Anzeigetafel angezeigt werden soll</p>
+  <form onreset="handleUploadImg()">
+    <div id="dropArea">
+      <div class="container">
+        <p class="centered-paragraph">Bild hierher ziehen...</p>
+      </div>
+    </div>
+    <input type="file" id="imgInput" accept="image/*" title=" " style="color:transparent;">
+    <button type="reset" id="imgUploadButton" disabled>Hochladen</button>
+  </form>
+
+  <p>oder Sie können auch nur einen Text senden.</p>
+  <form onreset="handleUploadTxt()">
+    <div>
+      <input type="text" id="textToSend" placeholder="anzuzeigender Text" text="Text, der angezeigt werden soll">
+    </div>
+    <div>
+      <label for="selColor">Wählen Sie eine Farbe für den Text aus</label>
+      <input type="color" id="selColor" name="selColor" value="#ff0000">
+    </div>
+    <label for="textMode">Wie soll der Text angezeigt werden?</label>
+    <select name="textMode" id="textMode">
+      <option value=" "> </option>
+      <option value="static">Static Text</option>
+      <option value="scroll">Scroll Text</option>
+    </select>
+    <span class="info-icon">&#63;</span>
+    <span class="info-tooltip">
+      Wenn Sie Static Text auswählen, wird der Text komplett angezeigt und automatisch umgebrochen.<br>
+      Wenn Sie Scroll Text auswählen, wird der Text als ein Lauftext angezeigt und nicht umgebrochen.<br>
+      Umlaute und ß können nicht dargestellt werden.
+    </span>
+    <button type="reset" id="txtUploadButton" disabled>Hochladen</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
