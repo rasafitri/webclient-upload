@@ -20,7 +20,7 @@ imgInput.addEventListener("change", function (e) {
 
 //#region Element textToSend
 var textSendField = document.getElementById("textToSend");
-textSendField.addEventListener("keyup", () => {
+textSendField.addEventListener("input", () => {
   // bei jeder Texteingabe wird die Eingabe ohne führende Leerzeichen
   // und ohne Leerzeichen am Ende geprüft
   var textToSend = textSendField.value.trim();
