@@ -10,18 +10,27 @@
 <body onload="onPageLoad()">
   <h1>Summer School 2023 - Prototyping für ein gesundes Berlin</h1>
   <p>Hier können Sie ein Bild hochladen, das auf der HUB75 Anzeigetafel angezeigt werden soll</p>
-  <form onreset="handleUploadImg()">
+  <form onreset="prepareSendImg()">
     <div id="dropArea">
       <div class="container">
-        <p class="centered-paragraph">Bild hierher ziehen...</p>
+        <p class="centered-paragraph">Bilder hierher ziehen oder hier klicken...</p>
       </div>
     </div>
-    <input type="file" id="imgInput" accept="image/*" title=" " style="color:transparent;">
-    <button type="reset" id="imgUploadButton" disabled>Hochladen</button>
+    <input type="file" id="imgInput" accept="image/*" multiple style="display: none;">
+
+    <label for="transitionTime">Frame Delay [ms]:</label>
+    <input type="number" id="transitionTime" name="transitionTime" text="" min="200" max="2000" pattern="[0-9]*"
+      disabled>
+    <span class="info-icon">&#63;</span>
+    <span class="info-tooltip">
+      Die Zeit zwischen den Frames in Millisekunden ohne Trennzeichen<br>
+      Gültiger Bereich 200...2000 ms
+    </span>
+    <button type="reset" id="imgSendButton" disabled>Hochladen</button>
   </form>
 
   <p>oder Sie können auch nur einen Text senden.</p>
-  <form onreset="handleUploadTxt()">
+  <form onreset="prepareSendTxt()">
     <div>
       <input type="text" id="textToSend" placeholder="anzuzeigender Text" text="Text, der angezeigt werden soll">
     </div>
@@ -41,7 +50,7 @@
       Wenn Sie Scroll Text auswählen, wird der Text als ein Lauftext angezeigt und nicht umgebrochen.<br>
       Umlaute und ß können nicht dargestellt werden.
     </span>
-    <button type="reset" id="txtUploadButton" disabled>Hochladen</button>
+    <button type="reset" id="txtSendButton" disabled>Hochladen</button>
   </form>
 
   <script src="script.js"></script>

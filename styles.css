@@ -32,6 +32,7 @@ p {
   height: 320px;
   border: 2px dashed #aaa;
   padding: 20px;
+  cursor: pointer;
   text-align: center;
   margin-bottom: 5px;
 }
@@ -49,8 +50,45 @@ p {
   font-size: 24pt;
 }
 
-#imgUploadButton,
-#txtUploadButton {
+.image-wrapper {
+  position: relative;
+}
+
+.delete-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: #ff0000;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #cc0000;
+}
+
+#transitionTime {
+  width: 100px;
+  max-width: 100px;
+  padding: 5px;
+  font-size: 16px;
+  font-weight: 400;
+  margin: 10px;
+  margin-right: 5px;
+}
+
+#imgSendButton {
+  margin-left: 110px;
+}
+
+#imgSendButton,
+#txtSendButton {
   background-color: var(--secondary-color);
   color: var(--background-color);
   border: none;
@@ -59,13 +97,13 @@ p {
   cursor: pointer;
 }
 
-#imgUploadButton:hover,
-#txtUploadButton:hover {
+#imgSendButton:hover,
+#txtSendButton:hover {
   background-color: var(--accent-color);
 }
 
-#imgUploadButton:disabled,
-#txtUploadButton:disabled {
+#imgSendButton:disabled,
+#txtSendButton:disabled {
   cursor: not-allowed;
   background-color: #aaa;
 }
