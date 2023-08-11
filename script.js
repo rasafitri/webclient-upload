@@ -1,4 +1,5 @@
 //#region Globale Hilfsvariablen
+
 const maxImages = 3;   // Max 3 Bildern hochladen
 
 var displayWidth = 0;  // Breite der Anzeige von Server
@@ -11,14 +12,13 @@ var isValidColor = true;  // Flag Farbe valid
 var isValidMode = false;  // Flag Textmodus valid
 
 var uploadedImages = []; // Array der eingegebenen Bilder
-var scaledImageDisp = new Image();
 //#endregion
 
 function onPageLoad() {
   // Beim Laden der Seite wird eine GET SIZE Request gesendet
   // der Server schickt dann als Response die Größe der LED-Anzeige zurück
   // Bei einem Fehler wird der Nutzer benachrichtigt
-  fetch('./size')
+  /*fetch('./size')
     .then(response => response.json())
     .then(data => {
       displayWidth = data.size[0];
@@ -30,7 +30,9 @@ function onPageLoad() {
       displayWidth = 64;
       displayHeight = 32;
       alert("Es ist ein Fehler passiert! Bitte laden Sie die Seite neu!")
-    });
+    });*/
+  displayWidth = 64;
+  displayHeight = 32;
 }
 
 //#region Element transitionTime
@@ -177,31 +179,60 @@ function prepareSendImg() {
       });
   }
   else {
-    // es gibt nur ein Bild, das C Code Array von den Bildern mit der Größe in JSON Format wird als HTTP POST Request an API endpoint /image gesendet
-    // Bei einer Response wird diese als Meldung angezeigt, danach wird die Seite zurückgesetzt
-    convertToCCode(uploadedImages[0])
-      .then(cCode => {
-        console.log(JSON.stringify(cCode));
-        fetch('./image', {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(cCode)
-        })
-          .then(response => response.text())
-          .then(data => {
-            alert(data);
-            resetImages();
+    if (uploadedImages[0].type === 'image/gif') {
+      // es gibt nur ein Bild als .gif Format, das C Code Array vom Bild mit der Größe in JSON Format wird als HTTP POST Request an API endpoint /gif gesendet
+      // Bei einer Response wird diese als Meldung angezeigt, danach wird die Seite zurückgesetzt
+      processGif()
+        .then(framesWithDelay => {
+          console.log(JSON.stringify(framesWithDelay));
+          fetch('./gif', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(framesWithDelay)
           })
-          .catch(error => {
-            alert('Error: ', error);
-            resetImages();
-          });
-      })
-      .catch(error => {
-        alert('Error: ', error);
-      })
+            .then(response => response.text())
+            .then(data => {
+              alert(data);
+              resetImages();
+            })
+            .catch(error => {
+              alert('Error: ', error);
+              resetImages();
+            });
+        })
+        .catch(error => {
+          alert('Error: ', error);
+        })
+    }
+    else {
+      // es gibt nur ein Bild, das C Code Array vom Bild mit der Größe in JSON Format wird als HTTP POST Request an API endpoint /image gesendet
+      // Bei einer Response wird diese als Meldung angezeigt, danach wird die Seite zurückgesetzt
+      processImg(uploadedImages[0])
+        .then(cCode => {
+          console.log(JSON.stringify(cCode));
+          fetch('./image', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(cCode)
+          })
+            .then(response => response.text())
+            .then(data => {
+              alert(data);
+              resetImages();
+            })
+            .catch(error => {
+              alert('Error: ', error);
+              resetImages();
+            });
+        })
+        .catch(error => {
+          alert('Error: ', error);
+        })
+    }
   }
 }
 //#endregion
@@ -255,22 +286,47 @@ function loadImage(files) {
         alert("Falsche Datei! Bitte nur Dateien in Bildformat eingeben!");
       }
       else {
-        // Es ist eine Bilddatei, in Array speichern und anzeigen
-        uploadedImages.push(files[i]);
-
-        if (uploadedImages.length == 1) {
+        if (files[i].type === 'image/gif') {
+          // eine .GIF Datei, darf nur einzeln hochgeladen werden
+          if (uploadedImages.length > 0) {
+            alert("Eine .GIF Datei kann nur einzeln hochgeladen werden!");
+            continue;
+          }
           // das erste Bild, was hochgeladen wird
+          // .gif speichern
+          uploadedImages.push(files[i]);
           // dropArea ohne Text für die Bildanzeige
           // bereit zum Senden
           dropArea.innerHTML = '';
           isValidImage = true;
           validityChanged();
+          // kein Frame Delay, weil dieser von der Datei übernommen wird
         }
         else {
-          // Es gibt mehrere Bilder --> der Nutzer darf Frame Delay einstellen
-          // Frame Delay wird freigeschaltet mit Default maxDelay
-          transitionTimeField.disabled = false;
-          transitionTimeField.value = maxDelay;
+          // überprüfe ob es schon mal eine .GIF Datei gibt
+          if (uploadedImages.length > 0 && uploadedImages[0].type === 'image/gif') {
+            alert("Eine .GIF Datei kann nur einzeln hochgeladen werden!");
+            continue;
+          }
+
+          // keine .GIF Datei, mehrere Bilder ermöglichen
+          // in Array speichern und anzeigen
+          uploadedImages.push(files[i]);
+
+          if (uploadedImages.length == 1) {
+            // das erste Bild, was hochgeladen wird
+            // dropArea ohne Text für die Bildanzeige
+            // bereit zum Senden
+            dropArea.innerHTML = '';
+            isValidImage = true;
+            validityChanged();
+          }
+          else {
+            // Es gibt mehrere Bilder --> der Nutzer darf Frame Delay einstellen
+            // Frame Delay wird freigeschaltet mit Default maxDelay
+            transitionTimeField.disabled = false;
+            transitionTimeField.value = maxDelay;
+          }
         }
 
         //#region Bildanzeige
@@ -321,58 +377,6 @@ function loadImage(files) {
   }
 }
 
-function convertToCCode(file) {
-  return new Promise((resolve, reject) => {
-    // konvertiert das Bild in ein C Code Array
-    var reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function () {
-      var image = new Image();
-      image.src = reader.result;
-      image.onload = function () {
-        var canvas = document.createElement('canvas');
-        // Bild skalieren wenn nötig
-        if (image.width > displayWidth || image.height > displayHeight) {
-          var scale = Math.min(displayWidth / image.width, displayHeight / image.height);
-
-          canvas.width = image.width * scale;
-          canvas.height = image.height * scale;
-        }
-        else {
-          canvas.width = image.width;
-          canvas.height = image.height;
-        }
-
-        // Bild für die LED-Anzeige verarbeiten
-        var context = canvas.getContext('2d');
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        var pixelData = imageData.data;
-
-        // pixel data berechnen für das C Code Array, es wird mit der Größe des Bilds in JSON Format vorbereitet 
-        var cCodeSize = {
-          size: [canvas.width, canvas.height],
-          hexValues: []
-        };
-
-        for (var i = 0; i < pixelData.length; i += 4) {
-          var r = pixelData[i];
-          var g = pixelData[i + 1];
-          var b = pixelData[i + 2];
-
-          var uint16Value = ((r & 0x1F) << 11) | ((g & 0x3F) << 5) | (b & 0x1F);
-          var hexValue = uint16Value.toString(16).toUpperCase().padStart(4, '0');
-          cCodeSize.hexValues.push('0x' + hexValue);
-        }
-
-        resolve(cCodeSize);
-      };
-    };
-    reader.onerror = (error) => reject(error);
-  });
-}
-
 async function processImages() {
   // Bilder und Delay in JSON Format vorbereiten
   var imageWithDelay = {
@@ -382,8 +386,8 @@ async function processImages() {
 
   for (let i = 0; i < uploadedImages.length; i++) {
     try {
-      const cCode = await convertToCCode(uploadedImages[i]);
-      imageWithDelay.images.push(cCode);
+      const cCodeSize = await processImg(uploadedImages[i]);
+      imageWithDelay.images.push(cCodeSize);
     }
     catch (error) {
       alert('Error: ' + error);
@@ -391,6 +395,98 @@ async function processImages() {
   }
 
   return imageWithDelay;
+}
+
+function processGif() {
+  // GIF Frames und Delay in JSON Format vorbereiten
+  var frameWithDelay = {
+    delays: [],
+    frames: []
+  };
+
+  // Gif laden
+  return new Promise((resolve, reject) => {
+    // konvertiert das Bild in ein C Code Array
+    var reader = new FileReader();
+    reader.onload = async function (e) {
+      const gifData = new Uint8Array(e.target.result);
+      const gif = new GifReader(gifData);
+
+      for (let i = 0; i < gif.numFrames(); i++) {
+        const frame = gif.frameInfo(i);
+        frameWithDelay.delays.push(frame.delay * 10);
+
+        // Decode the frame's pixels
+        const frameImageData = new Uint8Array(frame.width * frame.height * 4);
+        gif.decodeAndBlitFrameRGBA(i, frameImageData);
+
+        const imageElement = document.createElement('img');
+        imageElement.width = frame.width;
+        imageElement.height = frame.height;
+        imageElement.src = 'data:image/gif;base64,' + btoa(String.fromCharCode.apply(null, frameImageData));
+        const cCodeSize = convertImgToCCodeSize(imageElement);
+        frameWithDelay.frames.push(cCodeSize);
+      }
+
+      resolve(frameWithDelay);
+    };
+    reader.readAsArrayBuffer(uploadedImages[0]);
+    reader.onerror = (error) => reject(error);
+  });
+}
+
+function processImg(file) {
+  return new Promise((resolve, reject) => {
+    // konvertiert das Bild in ein C Code Array
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+      var image = new Image();
+      image.src = reader.result;
+      image.onload = (e) => resolve(convertImgToCCodeSize(e.target));
+    };
+    reader.onerror = (error) => reject(error);
+  });
+}
+
+function convertImgToCCodeSize(image) {
+  var canvas = document.createElement('canvas');
+  // Bild skalieren wenn nötig
+  if (image.width > displayWidth || image.height > displayHeight) {
+    var scale = Math.min(displayWidth / image.width, displayHeight / image.height);
+
+    canvas.width = image.width * scale;
+    canvas.height = image.height * scale;
+  }
+  else {
+    canvas.width = image.width;
+    canvas.height = image.height;
+  }
+
+  // Bild für die LED-Anzeige verarbeiten
+  var context = canvas.getContext('2d');
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  var pixelData = imageData.data;
+
+  // pixel data berechnen für das C Code Array, es wird mit der Größe des Bilds in JSON Format vorbereitet 
+  const cCodeSize = {
+    size: [canvas.width, canvas.height],
+    hexValues: []
+  };
+
+  for (var i = 0; i < pixelData.length; i += 4) {
+    var r = pixelData[i];
+    var g = pixelData[i + 1];
+    var b = pixelData[i + 2];
+
+    var uint16Value = ((r & 0x1F) << 11) | ((g & 0x3F) << 5) | (b & 0x1F);
+    var hexValue = uint16Value.toString(16).toUpperCase().padStart(4, '0');
+    cCodeSize.hexValues.push('0x' + hexValue);
+  }
+
+  return cCodeSize;
 }
 
 function hexToRGB(hexValue) {
